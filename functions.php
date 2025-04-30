@@ -1,0 +1,106 @@
+<?php
+require_once 'config.php';
+
+function register($email, $password) {
+    global $conn;
+    $hashed = password_hash($password, PASSWORD_DEFAULT);
+    $stmt = $conn->prepare("INSERT INTO users (email, password) VALUES (?, ?)");
+    $stmt->bind_param('ss', $email, $hashed);
+    return $stmt->execute();
+}
+
+function login($email, $password) {
+    global $conn;
+    $stmt = $conn->prepare("SELECT id, password, role FROM users WHERE email = ?");
+    $stmt->bind_param('s', $email);
+    $stmt->execute();
+    $stmt->bind_result($id, $hash, $role);
+    if ($stmt->fetch() && password_verify($password, $hash)) {
+        $_SESSION['user_id'] = $id;
+        $_SESSION['role'] = $role;
+        return true;
+    }
+    return false;
+}
+
+function isLoggedIn() {
+    return isset($_SESSION['user_id']);
+}
+
+function isAdmin() {
+    return isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
+}
+
+function getAllBooks() {
+    global $conn;
+    $res = $conn->query("SELECT * FROM books");
+    return $res->fetch_all(MYSQLI_ASSOC);
+}
+
+function requestLoan($user_id, $book_id) {
+    global $conn;
+    $stmt = $conn->prepare("INSERT INTO loans (user_id, book_id) VALUES (?, ?)");
+    $stmt->bind_param('ii', $user_id, $book_id);
+    return $stmt->execute();
+}
+
+function getUserLoans($user_id) {
+    global $conn;
+    $stmt = $conn->prepare(
+        "SELECT l.id, b.title, b.author, l.status, l.request_date, l.return_date
+        FROM loans l
+        JOIN books b ON l.book_id = b.id
+        WHERE l.user_id = ?"
+    );
+    $stmt->bind_param('i', $user_id);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+}
+
+function addBook($title, $author) {
+    global $conn;
+    $stmt = $conn->prepare("INSERT INTO books (title, author) VALUES (?, ?)");
+    $stmt->bind_param('ss', $title, $author);
+    return $stmt->execute();
+}
+
+function updateBook($id, $title, $author, $available) {
+    global $conn;
+    $stmt = $conn->prepare("UPDATE books SET title=?, author=?, available=? WHERE id=?");
+    $stmt->bind_param('ssii', $title, $author, $available, $id);
+    return $stmt->execute();
+}
+
+function deleteBook($id) {
+    global $conn;
+    $stmt = $conn->prepare("DELETE FROM books WHERE id = ?");
+    $stmt->bind_param('i', $id);
+    return $stmt->execute();
+}
+
+function getPendingLoans() {
+    global $conn;
+    $res = $conn->query(
+        "SELECT l.id, u.email, b.title, l.request_date
+         FROM loans l
+         JOIN users u ON l.user_id = u.id
+         JOIN books b ON l.book_id = b.id
+         WHERE l.status = 'pending'"
+    );
+    return $res->fetch_all(MYSQLI_ASSOC);
+}
+
+function approveLoan($loan_id, $days = 14) {
+    global $conn;
+    $return_date = date('Y-m-d H:i:s', strtotime("+{$days} days"));
+    $stmt1 = $conn->prepare("UPDATE loans SET status='approved', return_date=? WHERE id=?");
+    $stmt1->bind_param('si', $return_date, $loan_id);
+    $stmt1->execute();
+    // mark book unavailable
+    $stmt2 = $conn->prepare(
+        "UPDATE books SET available=0 WHERE id=(SELECT book_id FROM loans WHERE id=?)"
+    );
+    $stmt2->bind_param('i', $loan_id);
+    return $stmt2->execute();
+}
+?>
