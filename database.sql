@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS loans (
     FOREIGN KEY (book_id) REFERENCES books(id)
 );
 
+/**
 -- Sample data for testing
 -- Admin user (password: adminpass)
 INSERT INTO users (email, password, role) VALUES (
@@ -44,6 +45,7 @@ INSERT INTO users (email, password, role) VALUES (
     '$2y$10$7GzLx0c1U5X1QeN/lLWuhe5P3V5pQxuYNsGQmTUkMnC3E6kXKPp7G', -- hashed 'userpass'
     'user'
 );
+**/
 
 -- Sample books
 INSERT INTO books (title, author, available) VALUES 

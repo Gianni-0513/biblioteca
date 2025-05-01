@@ -3,6 +3,8 @@ require_once 'functions.php';
 if (!isLoggedIn() || !isAdmin()) { header('Location: login.php'); exit; }
 $books = getAllBooks();
 $pending = getPendingLoans();
+$approvedLoans = getApprovedLoans();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add'])) {
         addBook($_POST['title'], $_POST['author']);
@@ -12,6 +14,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         deleteBook($_POST['id']);
     } elseif (isset($_POST['approve'])) {
         approveLoan($_POST['loan_id']);
+    } elseif (isset($_POST['return'])) {
+        returnLoan($_POST['loan_id']);
     }
     header('Location: admin_dashboard.php'); exit;
 }
@@ -19,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html><html><body>
 <h1>Admin Dashboard</h1>
 <a href="logout.php">Logout</a>
+
 <h2>Gestione Libri</h2>
 <form method="post">
     <input type="hidden" name="add">
@@ -42,8 +47,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </tr>
 <?php endforeach; ?>
 </table>
+
 <h2>Richieste di Prestito</h2>
-<table border="1"><tr><th>ID</th><th>Utente</th><th>Libro</th><th>Data</th><th>Azione</th></tr>
+<table border="1"><tr><th>ID</th><th>Utente</th><th>Libro</th><th>Data Richiesta</th><th>Azione</th></tr>
 <?php foreach($pending as $p): ?>
 <tr>
     <td><?=$p['id']?></td>
@@ -51,7 +57,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <td><?=htmlspecialchars($p['title'])?></td>
     <td><?=$p['request_date']?></td>
     <td>
-        <form method="post"><input type="hidden" name="loan_id" value="<?=$p['id']?>"><button name="approve">Approva</button></form>
+        <form method="post" style="display:inline">
+          <input type="hidden" name="loan_id" value="<?=$p['id']?>">
+          <button name="approve">Approva</button>
+        </form>
+    </td>
+</tr>
+<?php endforeach; ?>
+</table>
+
+<h2>Prestiti Approvati</h2>
+<table border="1"><tr><th>ID</th><th>Utente</th><th>Libro</th><th>Data Richiesta</th><th>Data Riconsegna</th><th>Azione</th></tr>
+<?php foreach($approvedLoans as $a): ?>
+<tr>
+    <td><?=$a['id']?></td>
+    <td><?=htmlspecialchars($a['email'])?></td>
+    <td><?=htmlspecialchars($a['title'])?></td>
+    <td><?=$a['request_date']?></td>
+    <td><?=$a['return_date']?></td>
+    <td>
+        <form method="post" style="display:inline">
+          <input type="hidden" name="loan_id" value="<?=$a['id']?>">
+          <button name="return">Riconsegnato</button>
+        </form>
     </td>
 </tr>
 <?php endforeach; ?>

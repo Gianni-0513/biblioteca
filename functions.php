@@ -96,9 +96,34 @@ function approveLoan($loan_id, $days = 14) {
     $stmt1 = $conn->prepare("UPDATE loans SET status='approved', return_date=? WHERE id=?");
     $stmt1->bind_param('si', $return_date, $loan_id);
     $stmt1->execute();
-    // mark book unavailable
     $stmt2 = $conn->prepare(
         "UPDATE books SET available=0 WHERE id=(SELECT book_id FROM loans WHERE id=?)"
+    );
+    $stmt2->bind_param('i', $loan_id);
+    return $stmt2->execute();
+}
+
+function getApprovedLoans() {
+    global $conn;
+    $res = $conn->query(
+        "SELECT l.id, u.email, b.title, l.request_date, l.return_date
+         FROM loans l
+         JOIN users u ON l.user_id = u.id
+         JOIN books b ON l.book_id = b.id
+         WHERE l.status = 'approved'"
+    );
+    return $res->fetch_all(MYSQLI_ASSOC);
+}
+
+function returnLoan($loan_id) {
+    global $conn;
+    // mark loan returned
+    $stmt1 = $conn->prepare("UPDATE loans SET status='returned' WHERE id = ?");
+    $stmt1->bind_param('i', $loan_id);
+    $stmt1->execute();
+    // make book available again
+    $stmt2 = $conn->prepare(
+        "UPDATE books SET available = 1 WHERE id = (SELECT book_id FROM loans WHERE id = ?)"
     );
     $stmt2->bind_param('i', $loan_id);
     return $stmt2->execute();
