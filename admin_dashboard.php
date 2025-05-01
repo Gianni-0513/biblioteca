@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <tr>
     <form method="post">
     <td><input type="hidden" name="id" value="<?=$b['id']?>"><?=$b['id']?></td>
-    <td><input name="title" value="<?=htmlspecialchars($b['title'])?>"></td>
+    <td><a href="book_detail.php?id=<?=$b['id']?>"><?=htmlspecialchars($b['title'])?></a></td>
     <td><input name="author" value="<?=htmlspecialchars($b['author'])?>"></td>
     <td><input type="checkbox" name="available" <?=$b['available']?'checked':''?>></td>
     <td>
@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <tr>
     <td><?=$p['id']?></td>
     <td><?=htmlspecialchars($p['email'])?></td>
-    <td><?=htmlspecialchars($p['title'])?></td>
+    <td><a href="book_detail.php?id=<?=$b['id']?>"><?=htmlspecialchars($b['title'])?></a></td>
     <td><?=$p['request_date']?></td>
     <td>
         <form method="post" style="display:inline">

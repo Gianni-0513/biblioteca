@@ -1,4 +1,5 @@
--- file: database.sql
+
+-- file: database.sql (aggiornato con tabella reviews)
 CREATE DATABASE IF NOT EXISTS biblioteca;
 USE biblioteca;
 
@@ -30,24 +31,32 @@ CREATE TABLE IF NOT EXISTS loans (
     FOREIGN KEY (book_id) REFERENCES books(id)
 );
 
+-- Reviews table
+CREATE TABLE IF NOT EXISTS reviews (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    book_id INT NOT NULL,
+    content TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    hidden BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (book_id) REFERENCES books(id)
+);
+
 /**
--- Sample data for testing
--- Admin user (password: adminpass)
-INSERT INTO users (email, password, role) VALUES (
-    'admin@biblioteca.test',
-    '$2y$10$KbQiJfYzQeQHhVbS7q1hCu1oN9YxIxey3HkpFvHhIlzYfhE0zRL.u', -- hashed 'adminpass'
-    'admin'
-);
+-- Sample data
+INSERT INTO users (email, password, role) VALUES
+ ('admin@biblioteca.test', '$2y$10$KbQiJfYzQeQHhVbS7q1hCu1oN9YxIxey3HkpFvHhIlzYfhE0zRL.u', 'admin'),
+ ('user@biblioteca.test', '$2y$10$7GzLx0c1U5X1QeN/lLWuhe5P3V5pQxuYNsGQmTUkMnC3E6kXKPp7G', 'user');
 
--- Normal user (password: userpass)
-INSERT INTO users (email, password, role) VALUES (
-    'user@biblioteca.test',
-    '$2y$10$7GzLx0c1U5X1QeN/lLWuhe5P3V5pQxuYNsGQmTUkMnC3E6kXKPp7G', -- hashed 'userpass'
-    'user'
-);
-**/
+INSERT INTO books (title, author, available) VALUES
+ ('Il Nome della Rosa', 'Umberto Eco', TRUE),
+ ('La Divina Commedia', 'Dante Alighieri', TRUE),
+ ('Cent''anni di solitudine', 'Gabriel García Márquez', TRUE),
+ ('1984', 'George Orwell', TRUE);
+ **/
 
--- Sample books
+ -- Sample books
 INSERT INTO books (title, author, available) VALUES 
     ('Il Nome della Rosa', 'Umberto Eco', TRUE),
     ('La Divina Commedia', 'Dante Alighieri', TRUE),

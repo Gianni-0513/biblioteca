@@ -8,7 +8,7 @@ $books = getAllBooks();
 <table border="1"><tr><th>Titolo</th><th>Autore</th><th>Disponibile</th></tr>
 <?php foreach($books as $b): ?>
 <tr>
-    <td><?=htmlspecialchars($b['title'])?></td>
+    <td><a href="book_detail.php?id=<?=$b['id']?>"><?=htmlspecialchars($b['title'])?></a></td>
     <td><?=htmlspecialchars($b['author'])?></td>
     <td><?= $b['available'] ? 'Sì' : 'No' ?></td>
 </tr>

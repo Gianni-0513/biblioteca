@@ -128,4 +128,55 @@ function returnLoan($loan_id) {
     $stmt2->bind_param('i', $loan_id);
     return $stmt2->execute();
 }
+
+function getReviews($book_id, $includeHidden = false) {
+    global $conn;
+    if ($includeHidden && isAdmin()) {
+        $stmt = $conn->prepare(
+            "SELECT r.id, r.content, r.created_at, r.hidden, u.email
+             FROM reviews r JOIN users u ON r.user_id=u.id
+             WHERE r.book_id=? ORDER BY r.created_at DESC"
+        );
+    } else {
+        $stmt = $conn->prepare(
+            "SELECT r.id, r.content, r.created_at, u.email
+             FROM reviews r JOIN users u ON r.user_id=u.id
+             WHERE r.book_id=? AND r.hidden=0 ORDER BY r.created_at DESC"
+        );
+    }
+    $stmt->bind_param('i', $book_id);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+}
+
+function addReview($user_id, $book_id, $content) {
+    global $conn;
+    $stmt = $conn->prepare("INSERT INTO reviews (user_id, book_id, content) VALUES (?, ?, ?)");
+    $stmt->bind_param('iis', $user_id, $book_id, $content);
+    return $stmt->execute();
+}
+
+function updateReview($id, $user_id, $content) {
+    global $conn;
+    $stmt = $conn->prepare(
+        "UPDATE reviews SET content=?, created_at=CURRENT_TIMESTAMP WHERE id=? AND user_id=?"
+    );
+    $stmt->bind_param('sii', $content, $id, $user_id);
+    return $stmt->execute();
+}
+
+function deleteReview($id, $user_id) {
+    global $conn;
+    $stmt = $conn->prepare("DELETE FROM reviews WHERE id=? AND user_id=?");
+    $stmt->bind_param('ii', $id, $user_id);
+    return $stmt->execute();
+}
+
+function hideReview($id) {
+    global $conn;
+    if (!isAdmin()) return false;
+    $stmt = $conn->prepare("UPDATE reviews SET hidden=1 WHERE id=?");
+    $stmt->bind_param('i', $id);
+    return $stmt->execute();
+}
 ?>
