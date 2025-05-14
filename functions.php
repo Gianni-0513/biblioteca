@@ -133,13 +133,13 @@ function getReviews($book_id, $includeHidden = false) {
     global $conn;
     if ($includeHidden && isAdmin()) {
         $stmt = $conn->prepare(
-            "SELECT r.id, r.content, r.created_at, r.hidden, u.email
+            "SELECT r.id, r.content, r.created_at, r.hidden, u.email, r.user_id
              FROM reviews r JOIN users u ON r.user_id=u.id
              WHERE r.book_id=? ORDER BY r.created_at DESC"
         );
     } else {
         $stmt = $conn->prepare(
-            "SELECT r.id, r.content, r.created_at, u.email
+            "SELECT r.id, r.content, r.created_at, u.email, r.user_id
              FROM reviews r JOIN users u ON r.user_id=u.id
              WHERE r.book_id=? AND r.hidden=0 ORDER BY r.created_at DESC"
         );

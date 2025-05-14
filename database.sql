@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS loans (
     return_date DATETIME NULL,
     status ENUM('pending','approved','returned') DEFAULT 'pending',
     FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (book_id) REFERENCES books(id)
+    FOREIGN KEY (book_id) REFERENCES books(id) DELETE ON CASCADE
 );
 
 -- Reviews table
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS reviews (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     hidden BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (book_id) REFERENCES books(id)
+    FOREIGN KEY (book_id) REFERENCES books(id) DELETE ON CASCADE
 );
 
 /**
