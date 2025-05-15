@@ -165,10 +165,10 @@ function updateReview($id, $user_id, $content) {
     return $stmt->execute();
 }
 
-function deleteReview($id, $user_id) {
+function deleteReview($id) {
     global $conn;
-    $stmt = $conn->prepare("DELETE FROM reviews WHERE id=? AND user_id=?");
-    $stmt->bind_param('ii', $id, $user_id);
+    $stmt = $conn->prepare("DELETE FROM reviews WHERE id=?");
+    $stmt->bind_param('i', $id);
     return $stmt->execute();
 }
 
