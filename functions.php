@@ -175,8 +175,23 @@ function deleteReview($id) {
 function hideReview($id) {
     global $conn;
     if (!isAdmin()) return false;
-    $stmt = $conn->prepare("UPDATE reviews SET hidden=1 WHERE id=?");
+    $stmt = $conn->prepare("SELECT hidden FROM reviews WHERE id = ?");
+    if (!$stmt) return false;
+
     $stmt->bind_param('i', $id);
-    return $stmt->execute();
+    $stmt->execute();
+
+    $result = $stmt->get_result();
+    if (!$result || $result->num_rows === 0) return false;
+
+    $row = $result->fetch_assoc();
+    $newHiddenStatus = $row['hidden'] == 1 ? 0 : 1;
+
+    $updateStmt = $conn->prepare("UPDATE reviews SET hidden = ? WHERE id = ?");
+    if (!$updateStmt) return false;
+
+    $updateStmt->bind_param('ii', $newHiddenStatus, $id);
+
+    return $updateStmt->execute();
 }
 ?>
